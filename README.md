@@ -3,292 +3,403 @@
 
 页面效果图
 
-![](https://raw.githubusercontent.com/code4appcan/Plugin-Share/master/1.png)
+![](https://raw.githubusercontent.com/code4appcan/Plugin-Pay/master/picture/%E5%9B%BE%E7%89%871.png)
 
-1、首先编写UI页面布局。新建一个appcan页面，命名为lvdetail.html，同时IDE会自动根据lvdetail.html页面生成一个浮动窗口lvdetail_content.html页面。
-lvdetail.html主窗口头部header部分布局代码：
+1、首先编写UI界面布局。新建一个appcan页面，命名为waitpay.html，同时IDE会自动根据waitpay.html页面生成一个浮动窗口waitpay_content.html页面。
+waitpay.html主窗口头部header部分布局代码：
 
-	    <div id="header" class="uh bc-text-head ub bc-head" style="height: 2.8em">
-    <div class="nav-btn" id="nav-left">
-        <div class="fa fa-angle-left fa-2x" id="aa"></div>
+	    <div id="page_0" class="up ub ub-ver bc-bg" tabindex="0">
+    <!--header开始-->
+    <div id="header" class="uh ub bc-head-m">
+        <div class="nav-btn blue" id="nav-left">
+            <div class="fa fa-angle-left fa-2x"></div>
+        </div>
+        <h1 class="ut  bc-text ub-f1 ulev-3 ut-s tx-c" tabindex="0">待付款</h1>
+        <div class="nav-btn blue" id="nav-right"></div>
     </div>
-    <h1 class="ut ub-f1 ulev-3 ut-s tx-c" tabindex="0" id="bar"></h1>
-    <div class="nav-btn nav-bt ub" style="margin-right: 0.7em">
-        <div class="ub ub-f1 fa fa-comment-o " style="margin-right: 0.8em" id="comment"></div>
-        <div class="ub ub-f1 fa fa-heart-o" style="margin-right: 0.8em;" id="conlect" ></div>
-        <div class="ub ub-f1 image uhide " style="margin-right: 0.8em;" id="delete" ></div>
-        <div class="ub ub-f1 fa fa-external-link " id="share"></div>    
-    </div>
-</div>
+    <!--header结束--><!--content开始-->
+    <div id="content" class="ub-f1 tx-l " style="background-color: #F2F2F2">
+    </div>        
+    <!--content结束-->
+	</div>
 
 效果如下：
 
-![](https://raw.githubusercontent.com/code4appcan/Plugin-Share/master/2.png)
+![](https://raw.githubusercontent.com/code4appcan/Plugin-Pay/master/picture/%E5%9B%BE%E7%89%878.png)
 
-2、其次在lvdetail.html页面js脚本区内编写javascript代码，用于实现点击右上角分享图标按钮后弹出分享窗口。
+2、其次在waitpay.html页面js脚本区内编写javaScript代码，用于实现获取微信支付结果的回调函数。
 
-	   appcan.button("#share", "btn-act", function() {
-   			appcan.frame.open('share_content', 'share_content.html', 0);
+	   uexWeiXin.cbStartPay = function(data) {
+    if(JSON.parse(data).errCode==0){
+        uexWindow.evaluatePopoverScript("myorder", "content", "show()");
+        uexWindow.evaluatePopoverScript("paylist", "content", "show()");
+        appcan.window.close(-1);
+    }else if(JSON.parse(data).errCode==-2){
+        uexWindow.toast("0", "5","取消支付", "2000");
+    }else{
+        uexWindow.toast("0", "5","支付失败", "2000");
+	}
+
+效果如下：
+
+![](https://raw.githubusercontent.com/code4appcan/Plugin-Pay/master/picture/%E5%9B%BE%E7%89%872.png)
+
+然后接着在js脚本区域编写javaScript代码，用于实现当点击页面返回按钮时返回上一级页面并清除当前窗口的订单信息。代码如下：
+
+	    appcan.button(".nav-btn", "btn-act", function() {
+    		appcan.locStorage.remove("country");
+    		appcan.locStorage.remove("orderId");
+    		appcan.locStorage.remove('goodsArr');
+    		appcan.locStorage.remove('length');
+    		appcan.window.close(-1);
+	})
+
+效果如下：
+
+![](https://raw.githubusercontent.com/code4appcan/Plugin-Pay/master/picture/%E5%9B%BE%E7%89%873.png)
+
+3、接下来在waitpay_content.html浮动窗口编写UI布局代码：
+
+	    <div class="ub ub-f1 ub-ver" style="background-color: #FFFFFF;line-height: 3em;margin-bottom: .5em;">
+	<div class="ub" style="height:3em;border-bottom: 1px solid #DBDBDB;padding:0 1em;color: #7A7A7A">
+	订单号：<span id="orderNo"></span>
+	</div>
+	<div class="ub" style="height:3em;padding:0 1em;color: #FF3B77">
+	等待买家付款
+	</div>
+	</div>
+	<div class="ub ub-f1" style="padding: 0.8em;background-color: #FFFFFF;margin-bottom: .5em;">
+	<div class="ub ub-ver ub-f1" >
+	<div class="" style="color:#3D3D3D;line-height: 2em;margin:0 1em;">
+    收货人：<span id="contact"></span>
+    <div style="float: right" id="tel"></div>
+	</div>
+	<div class="ub ulev-1" style="color:#808080;line-height: 1.4em;margin-top: .5em;padding: 0 1em;">
+    <img class="" src="../image/Pin-Assistor.png" style="width:1.2em"/>
+    <div style="width:85%;margin: 0 1em;">
+        收货地址：<span id="address"></span>
+    </div>
+	</div>
+	</div>
+	</div>
+	<div class="ub ub-ver" style="padding: 0.8em;background-color: #FFFFFF;margin-bottom: .5em;">
+	<ul id="List">
+
+	</ul>
+	</div>
+	<div class="ub ub-f1" style="padding: 0.8em;background-color: #FFFFFF;margin-bottom: 1px;">
+	<div class="ub ub-f1" style="line-height: 2em;">
+	<div class="" style="color:#3D3D3D;margin: 0 .5em;">
+	    配送
+	</div>
+	<img class="" src="../image/Question2.png" style="width:1.5em;margin-top: .2em;" id="peisong"/>
+	<div style="color:#808080;margin-left: 30%;">
+	    卖家回国后发货，到付
+	</div>
+	</div>
+	</div>
+	<div class="ub ub-f1 isover" style="padding: 0.8em;background-color: #FFFFFF;margin-bottom: 1px;">
+	<div class="ub ub-f1" style="line-height: 2em;" id="couponlist">
+	<div class="ub ub-f1" style="color:#3D3D3D;margin: 0 .5em;">
+	    优惠券
+	</div>
+	<div style="color:#808080;margin-right: 1em;" id="coupon">
+	    满99元可以使用10元优惠券
+	</div>
+	<div class="fa fa-angle-right fa-2x" style="font-size: 1.5em;margin-right: 0.5em;color:#808080"></div>
+
+	</div>
+	</div>
+	<div class="ub ub-f1 isover" style="padding: 0.8em;background-color: #FFFFFF;margin-bottom:1px;">
+	<div class="ub ub-f1" style="line-height: 2em;">
+	<div class="ub ub-f1" style="color:#3D3D3D;margin: 0 .5em;">
+	    积分
+	</div>
+	<div style="color:#808080;margin-right: 1em;" id="points"></div>
+	<div class="ub ub-ac ub-pc" style="margin-right: .5em;">
+	    <div id="choose1" class="ub ub-ac false" style="width: 2em;height: 1.2em;border-radius: 1em;">
+	        <div class="cbgb" style="width: 1.1em;height: 1.2em;border-radius: 1em;"></div>
+	    </div>
+	</div>
+	</div>
+	</div>
+	<div class="ub ub-f1 isover" style="padding: 0.8em;background-color: #FFFFFF;margin-bottom: 1px;">
+	<div class="ub ub-f1" style="line-height: 2em;">
+	<div class="ub ub-f1" style="color:#3D3D3D;margin: 0 .5em;">
+	    余额
+	</div>
+	<div style="color:#808080;margin-right: 1em;" id="balance"></div>
+	<div class="ub ub-ac ub-pc" style="margin-right: .5em;">
+	    <div id="choose2" class="ub ub-ac false" style="width: 2em;height: 1.2em;border-radius: 1em;">
+	        <div class="cbgb" style="width: 1.1em;height: 1.2em;border-radius: 1em;"></div>
+	    </div>
+	</div>
+	</div>
+	</div>
+	<div class="ub ub-f1 ub-pc ub-ac ub-ver isover" id="pricepart" style="margin:1em;">
+	<div class="ub ub-ac ub-pc" style="width: 15em" id="test">
+	<div id="mustpay">
+	    应付
+	</div>
+	<div style="color:#FF0D57;" id="totalPrice">
+	    ￥0
+	</div>
+	&nbsp;&nbsp;&nbsp;&nbsp;
+	<div style="font-size: .8em;width:9em">
+	    已优惠<span style="color:#FF0D57;" id="cheap">￥0</span>
+	</div>
+	</div>
+	</div>
+	<div class="ub ub-f1 ub-ver isover" id="paymode" style="background: #FFFFFF;">
+	<div class="ub ub-ac ub-pc" style="width: 100%;line-height: 3em;color: #999999">
+	支付方式
+	</div>
+	<div class="ub ub-f1" style="padding: .5em;">
+	<ul style="width:100%;padding-bottom: .5em;">
+    <li style='width:31%;display: inline-block;margin-left: 1.5%;text-align: center'  onclick="Alipay();">
+        <img src="../image/alipay.png" style="height:2.2em"/>
+        <div class="ub ub-ac ub-pc" style="width:100%;line-height: 2.4em;">
+            支付宝
+        </div>
+    </li>
+    <li style='width:31%;display: inline-block;margin-left: 1.5%;text-align: center' onclick="weixinpay();">
+        <img src="../image/weixin.png" style="height:2.8em"/>
+        <div class="ub ub-ac ub-pc" style="width:100%;line-height: 2.4em;">
+            微信支付
+        </div>
+    </li>
+	   </ul>
+	</div>
+	</div>
+	<div class="ub ub-ac ub-pc uhide" id="cancleorder" style="height: 4em;padding:.5em;background-color: #F2F2F2">
+	<div class="ub ub-ac ub-pc ulev-3" id="cancle" style="width:9em;height: 2.2em;border-radius:.2em;color:#00C1F9;background-color:#FFFFFF;border: 1px solid #00C1F9;">
+	取消定单
+	</div>
+	</div>
+
+效果如下：
+
+![](https://raw.githubusercontent.com/code4appcan/Plugin-Pay/master/picture/%E5%9B%BE%E7%89%874.png)
+
+4、随后在waitpay_content.html页面js脚本区内编写javaScript代码，用于实现当前页面的支付宝支付功能和当前页面的微信支付功能，以及当前页面的数据获取功能。
+
+(1) 关于支付宝支付功能的使用请参考appcan官网uexAliPay插件的相关说明。
+http://newdocx.appcan.cn/newdocx/docx?type=1385_975
+
+(2)关于微信支付功能的使用请参考appcan官网uexWeiXin插件的相关说明。
+http://newdocx.appcan.cn/newdocx/docx?type=1020_975
+
+(3) 首先定义从支付宝官网申请得到的签约商户信息，其次是定义当前页面的币种、汇率、积分以及买家账户余额的信息。具体代码如下：
+
+	    var minusMy = appcan.locStorage.getVal("minusMy");
+		var partner = "208845648165561";
+		var seller = "48652321@qq.com";
+		var rsaPrivate= "MIICdwIBADANBgkn4E3TszcjB+Kf7CGVQ/nsvyywjA+i+0vmaftUzoOdIcWnI8UEr9I=";
+		var rsaPublic = "MIGfMA0GCSqGSIb3DQEBAQUAVsW8Ol75p6/B5KsiNG9zpgmLCUYuLkxpLQIDAQAB";
+		var notifyUrl;
+		var orderId = appcan.locStorage.getVal("orderId");
+		var userId = appcan.locStorage.getVal("userId");
+		console.log(orderId);
+		var country = appcan.locStorage.getVal("country");
+		var countryf = areaList[country].name;
+		var back = appcan.locStorage.getVal("back");
+		var fetchgoSeller;
+		//卖家id;
+		var originAmount = 0;
+		//订单初始金额，外币
+		var priceCode;
+		//币种
+		var payRate;
+		//汇率
+		var userCoupon;
+		//var points=appcan.locStorage.getVal("integar");//获取到的用户积分
+		var points;
+		//积分
+		var rates = Number(0.01);
+		//积分兑换率
+		var totalPrice = 0;
+		var cheap;
+		//积分可以兑换的金额
+		var couponPrice = 0;
+		var num;
+		var last = 0;
+		var balance;
+		//余额
+		var lastCheap = 0;
+		var showBalance = 0;
+		//最后用户使用的余额
+
+(4)随后在页面预加载函数内编写查询当用登录用户积分和余额的代码，支付宝支付状态的监听函数以及微信支付状态和生成预支付订单的回调函数，具体代码如下：
+
+	    appcan.ready(function() {
+		if (minusMy <= 0) {
+		$(".isover").remove();
+		$("#cancleorder").removeClass("uhide");
+		} else {
+		/*查询用户的积分和余额*/
+		appcan.request.ajax({
+    url : api + '/api/user/me/' + userId,
+    type : 'get',
+    dataType : 'json',
+    success : function(data) {
+        balance = Math.floor(data.data.user.money);
+        //查询到用户的余额
+        $("#balance").html(balance + "元");
+        point = Number(data.data.user.score);
+        points = point - point % 100;
+        //查询到用户的积分
+        cheap = points * rates;
+        /*单个订单只允许使用1000积分*/
+        if (points < 1000) {
+            $("#points").html(points + "积分抵扣" + cheap + "元");
+        } else {
+            points = 1000;
+            cheap = 10;
+            $("#points").html(points + "积分抵扣" + cheap + "元");
+        }
+    },
+    error : function(errMessage) {
+    }
+	});
+	}
+	show();
+	uexAliPay.onStatus = function(status, des) {
+	if (status == 0) {
+    uexWindow.evaluatePopoverScript("myorder", "content", "show()");
+    uexWindow.evaluatePopoverScript("paylist", "content", "show()");
+    uexWindow.evaluateScript('waitpay', '0', 'appcan.window.close(-1)');
+	} else if (status == 4) {
+    uexWindow.toast("0", "5", "取消支付", "2000");
+	} else {
+    uexWindow.toast("0", "5", "支付失败", "2000");
+	}
+	}
+	uexWeiXin.cbStartPay = function(data) {
+	if (JSON.parse(data).errCode == 0) {
+    uexWindow.evaluatePopoverScript("myorder", "content", "show()");
+    uexWindow.evaluatePopoverScript("paylist", "content", "show()");
+    appcan.window.close(-1);
+	} else if (JSON.parse(data).errCode == -2) {
+    uexWindow.toast("0", "5", "取消支付", "2000");
+	} else {
+    uexWindow.toast("0", "5", "支付失败", "2000");
+	}
+	}
+	//微信授权回调
+	uexWeiXin.cbRegisterApp = function(opCode, dataType, data) {
+	if (data == 0) {
+    uexWeiXin.isSupportPay();
+	}
+	};
+	uexWeiXin.cbIsSupportPay = function(opCode, dataType, data) {
+	if (data == 0) {
+    getPrepayId();
+	}
+	}
+	uexWeiXin.cbGetPrepayId = function(data) {
+	var pay = JSON.parse(data);
+	var date = new Date();
+	var timestamp = date.getTime().toString().substring(0, 10);
+	if (JSON.parse(data).result_code == "SUCCESS") {
+    var json = {
+        appid : "wxf14d58cec986585b", //(必选)微信分配的AppID
+        partnerid : "1234567890", //(必选)微信支付分配的商户号
+        prepayid : "wx201506031538433160984eee0861221810", //(必选)微信返回的支付交易会话ID
+        "package" : "Sign=WXPay", //(必选)暂填写固定值Sign=WXPay
+        noncestr :"weradfdgdvccfexs", //(必选)随机字符串
+        timestamp : "1412000000", //(必选)时间戳
+        sign :"8FC5935C38628F44B924C838D760E33E"//(必选)签名}
+    }
+	var strrrr="appid=wxf14d58cec986585b&noncestr="+weradfdgdvccfexs+ "&package=Sign=WXPay&partnerid=1234567890&prepayid="+wx201506031538433160984eee0861221810+ "&timestamp=" + 1412000000 + "&key=0e857460d1b309130b9b1d2530ac094d";
+    json.sign = hex_md5(strrrr).toUpperCase();
+    uexWeiXin.startPay(JSON.stringify(json));
+	}
+	}
+	});
+
+(5)编写微信授权函数和微信生成预支付订单函数，当点击微信支付Logo时打开支付界面。具体代码如下：
+
+	    function weixinpay() {
+		uexWeiXin.registerApp('wxd930ea5d5a258f4f');
+		}
+		function getPrepayId() {
+		var money;
+		var userCouponId;
+		if ($("#choose1").hasClass("true")) {
+		} else {
+    points = 0;
+	}
+	if ($("#choose2").hasClass("true")) {
+    money = showBalance;
+	} else {
+    money = 0;
+	}
+	if ($('#coupon').html() == '满99元可以使用10元优惠券') {
+    userCouponId = 'X';
+	} else {
+    userCouponId = userCoupon;
+	}
+	var date = new Date();
+	var timestamp = date.getTime().toString().substring(0, 10);
+	originAmount = money + last + couponPrice;
+	alert("money:" + money + "last:" + last + "couponPrice:" + couponPrice);
+	alert(originAmount);
+	var param1 = {
+    appid : "wxd930ea5d5a258f4f",
+    mch_id : "1234567890",
+    nonce_str : "weradfdgdvccfexs1",
+    body : "海外购",
+    detail : "detail",
+    attach : orderId + "_" + originAmount + "_" + payRate + "_" + priceCode + "_" + money + "_" + points + "_" + userCouponId + "_" + "1",
+    out_trade_no : timestamp,
+    fee_type : "CNY",
+    total_fee : 1, //last*100
+    spbill_create_ip : "127.0.0.1",
+    notify_url : api + "/api/trans/wxpay",
+    trade_type : "APP",
+    sign : "8FC5935C38628F44B924C838D760E33E"
+		};
+		Var stringSign="appid=wxd930ea5d5a258f4f&attach="+param1.attach+"&body="+param1.body+ "&detail="+param1.detail+"&fee_type=CNY&mch_id=1234567890&nonce_str=weradfdgdvccfexs1&notify_url="+param1.notify_url+"&out_trade_no="+param1.out_trade_no+&spbill_create_ip=127.0.0.1&total_fee=" + param1.total_fee + "&trade_type=APP&key=0e857460d1b309130b9b1d2530ac094d";
+		var md = hex_md5(stringSign).toUpperCase();
+		alert(param1.attach);
+		param1.sign = md;
+		var data1 = JSON.stringify(param1);
+		uexWeiXin.getPrepayId(data1);
 		}
 
 效果如下：
 
-![](https://raw.githubusercontent.com/code4appcan/Plugin-Share/master/3.png)
+![](https://raw.githubusercontent.com/code4appcan/Plugin-Pay/master/picture/%E5%9B%BE%E7%89%875.png)
 
-3、其次在lvdetail_content.html浮动窗口编写页面UI布局代码
+![](https://raw.githubusercontent.com/code4appcan/Plugin-Pay/master/picture/%E5%9B%BE%E7%89%876.png)
 
-	    <div class="ub ub-ver" style="border-bottom:0.7em solid #DDDDDE">
-            <div class="ub header-image" style="background-size:100% 100%;height:14em;width:100%;background-repeat: no-repeat;" id="img"></div>
-            <div class="ub ulev1 ub-ac" style="margin-top: 0.5em">
-                相关图片
-            </div>
-            <div style="width:100%;height:7em; overflow-x:auto;margin-top: 0.2em;" class="ub ">
-                <table>
-                    <tr id="imgList">
-                        <td id="img0"></td>
-                    </tr>
-                </table>
-            </div>
-            <div class="ub ub-ac ulev1" style="height:2em;margin:0.6em 0;color:black; ">
-                简介
-            </div>
-            <div class="ub ub-ver" style="border-bottom: 1px solid #DDDDDE ;">
-                <div id="test" class="ub ub-ver " style="color:#6B6B6B ;padding-bottom: 1em;line-height: 1.5em">
-                    <div class="ub ub-f1 aa" id="box" style="padding: 0 1em;text-indent: 1em"></div>
-                    <div class="ub ub-f1  ub-pc" id="down">
-                        <img src="images/xiangxia.png" style="width: 1.5em" />
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="ub ub-ac ulev1 " style="height:2em;margin:0.6em 0 0.6em 1em">
-            营业时间
-        </div>
-        <div class="ub" style="color:#6B6B6B;padding: 0 1em;" id="time"></div>
-        <div class="ub ub-ver " style="margin:1em 0;padding: 0 0 1em 1em;border-bottom: 1px solid #DDDDDE;">
-            <div class="ulev1 " style=" ">
-                电话
-            </div>
-            <div style="color:#6B6B6B;margin-top: 1em" id="phone"></div>
-        </div>
-        <div class="ub ">
-            <div class="ub ub-f1 ub-ver" style="padding: 0 1em;">
-                <div class="ulev1" style="color: black">
-                    门票
-                </div>
-                <div style="color:#6B6B6B;margin-left: 0.1em;margin-top: 1em;margin-bottom: 1em" id="price"></div>
-            </div>
-            <div class="ub ub-ac ub-pc ulev1" style="color:red;margin:-2em 2em 0 0;font-weight: bold;" id="callToOrder">
-                我要订票
-            </div>
-        </div>
-        </div>
-        <div class="ub ub-ver" style="border-bottom: 0.7em solid #DDDDDE">
-            <div class="ub ub-hor" style="">
-                <div class="ub ub-f1 ub-ver"  >
-                    <div class="ub ub-hor">
-                        <div class="ub ub-f1 ub-ac ulev1" style="height:2em;color:black">
-                            地址
-                        </div>
-                        <img src="images/map.png" class="ub " style="width:1.1em;height:1.3em;margin-right: 0.6em" id="map"/>
-                    </div>
-                    <div class="ub ulev-1" style="color:#6B6B6B;border-bottom: 1px solid #DDDDDE;padding: 0 0 0.8em 0.8em;margin-top: 0.3em ;line-height: 1.4em" id="address"></div>
-                </div>
-            </div>
-            <div class="ub ub-ver" style="border-bottom: 1px solid #DDDDDE ;">
-                <div id="test" class="ub ub-ver " style="color:#6B6B6B ;padding-bottom: 1em;line-height: 1.5em">
-                    <div class="ub ub-ac ulev1" style="height:2em;color:black">
-                        如何到达
-                    </div>
-                    <div class="ub ub-f1 aa ulev-1" id="box_2" style="padding: 0.5em 1em;" ></div>
-                </div>
-                <div class="ub ub-f1  ub-pc" id="down_2">
-                    <img src="images/xiangxia.png" style="width: 1.5em" />
-                </div>
-            </div>
-        </div>
-        <div class="ub ub-ver " style="">
-            <div class="ub ub-ac ulev1" style="height:2em;color:#00A1EA">
-                小贴士
-            </div>
-            <div class="ub ulev-1" style="color:#6B6B6B;padding:0 1em 1em;text-indent: 1em" id="tips"></div>
-        </div>
+(6)编写支付宝设置商户信息函数以及支付功能函数，当点击支付宝Logo时打开支付界面。具体代码如下：
+
+	   function setInfo() {
+		var money = 0;
+	if ($("#choose2").hasClass("true")) {
+    money = Number(showBalance);
+	}
+	if ($('#coupon').html() == '满99元可以使用10元优惠券') {
+    var userCouponId = '';
+	} else {
+    var userCouponId = userCoupon;
+	}
+		originAmount = money + last + couponPrice;
+		alert("money:" + money + "last:" + last + "couponPrice:" + couponPrice);
+		alert(originAmount);
+		notifyUrl = api + "/api/trans/alipay?orderId=" + orderId + "&originAmount=" + originAmount + "&priceCode=" + priceCode + "&rate=" + payRate + "&score=" + points + "&money=" + money + "&userCouponId=" + userCouponId + "&action=1" + "&total_fee=" + last;
+		alert(notifyUrl);
+		uexAliPay.setPayInfo(partner, seller, rsaPrivate, rsaPublic, notifyUrl);
+		}
+		function Alipay() {
+		setInfo();
+		var subject = "海外购" + num;
+		var body = "订单内容";
+		var fee = 0.01;
+		uexAliPay.pay(num, subject, body, fee);
+		}
 
 效果如下：
 
-![](https://raw.githubusercontent.com/code4appcan/Plugin-Share/master/4.png)
-![](https://raw.githubusercontent.com/code4appcan/Plugin-Share/master/5.png)
-![](https://raw.githubusercontent.com/code4appcan/Plugin-Share/master/6.png)
-
-4、然后新建一个share_content.html页面，并编写UI布局代码。
-
-	    <div class="ub" id="close"></div>
-        <div class="ub ub-ver " style="background-color: #D7D7D7;width:100%;padding-bottom: 2em;position: absolute;bottom: 0">
-            <div class="ub " style="margin-top: 2em;margin-bottom: 1em">
-                <div class="ub ub-f1 ub-ver" onclick="wx_share(0)">
-                    <div id="view" class="ub ub-ac ub-pc"><img src="images/weixinFriend.png" style="height:4em;width:4em" >
-                    </div>
-                    <div class="ub ub-ac ub-pc text" style="margin-top: 0.5em">
-                        微信好友
-                    </div>
-                </div>
-                <div class="ub ub-f1 ub-ver" onclick="wx_share(1)">
-                    <div id="food" class="ub ub-ac ub-pc"><img src="images/weixinQuan.png"  style="height:4em;width:4em" >
-                    </div>
-                    <div class="ub ub-ac ub-pc text" style="margin-top: 0.5em">
-                        朋友圈
-                    </div>
-                </div>
-                <div class="ub  ub-f1 ub-ver" id="QQ">
-                    <div id="hotel" class="ub ub-ac ub-pc"><img src="images/QQ.png"  style="height:4em;width:4em" >
-                    </div>
-                    <div class="ub ub-ac ub-pc text" style="margin-top: 0.5em">
-                        QQ
-                    </div>
-                </div>
-            </div>
-            <div class="ub " style="margin-bottom: 1em">
-                <div class="ub ub-f1 ub-ver" id="QQk">
-                    <div id="view" class="ub ub-ac ub-pc"><img src="images/QQk.png" style="height:4em;width:4em" >
-                    </div>
-                    <div class="ub ub-ac ub-pc text" style="margin-top: 0.5em">
-                        QQ空间
-                    </div>
-                </div>
-                <div class="ub ub-f1 ub-ver" id="message">
-                    <div id="food" class="ub ub-ac ub-pc"><img src="images/message.png" style="height:4em;width:4em" >
-                    </div>
-                    <div class="ub ub-ac ub-pc text" style="margin-top: 0.5em">
-                        短信
-                    </div>
-                </div>
-                <div class="ub  ub-f1 ub-ver" id="copy">
-                    <div id="hotel" class="ub ub-ac ub-pc"><img src="images/copy.png" style="height:4em;width:4em" >
-                    </div>
-                    <div class="ub ub-ac ub-pc text" style="margin-top: 0.5em">
-                        复制
-                    </div>
-                </div>
-            </div>
-            <div class="ub ub-f1 ub-ac ub-pc ulev" style="background-color: white;height:3em;margin-top: 1em" id="cancle">
-                取消
-            </div>
-        </div>
-
-效果如下：
-
-![](https://raw.githubusercontent.com/code4appcan/Plugin-Share/master/7.png)
-
-5、最后在share_content.html页面js脚本区内编写javascript代码，实现微信分享到好友，微信分享到朋友圈，QQ分享到好友，QQ分享到空间，以及手机短信发送和复制信息到剪帖板功能。
-
-（1）微信分享使用之前需要到微信官网申请注册开发者账号并获取appID和appScret，详情可参考http://newdocx.appcan.cn/newdocx/docx?type=1449_975
-
-（2）QQ分享使用之前需要到QQ互联开放平台为应用申请相应的AppID,并将AppID配置到应用中。详情可参考http://newdocx.appcan.cn/newdocx/docx?type=1329_975
-
-当分别获取了微信appID和QQ的appID之后，接下来在share_content.html页面js脚本区编写代码
-
-	    var weixin_appId = "wxd7ff3acbfbb05ff0";
-        var weixin_app_serect = "d4624c36b6795d1d99dcf0547af5443d";
-        var qq_appId = '1104873173';
-        var shareImg = appcan.locStorage.getVal("shareImg");
-        var shareImg = ipVal + shareImg.split("WEB-INF/")[1];
-        appcan.ready(function() {
-        });
-
->微信分享文本给指定好友
-
-	    function wx_share(type)//0是发送好友，1是分享到朋友圈
-        {
-            uexWeiXin.registerApp(weixin_appId);
-            uexWeiXin.cbRegisterApp = function(opCode, dataType, data) {
-                if (data == 0)//授权成功
-                {
-                    uexWeiXin.isWXAppInstalled();
-                    uexWeiXin.cbIsWXAppInstalled = function(opCode, dataType, data) {
-                        alert(data);
-                        if (data == 0) {
-                            var con = {
-                                "thumbImg" : shareImg,
-                                "wedpageUrl" : "http://www.badongtour.com/",
-                                "scene" : type,
-                                "title" : "秘境巴东",
-                                "description" : "秘境巴东一日游！"
-                            };
-
-                            uexWeiXin.shareLinkContent(JsonData);
-                        } else if (data == 1) {
-                            appcan.window.alert({
-                                title : "提示",
-                                content : "检测到您未安装微信",
-                                button : ["确定"]
-                            })
-                        }
-                    }
-                } else {
-                    appcan.window.alert({
-                        title : "提示",
-                        content : "授权失败",
-                        button : ["确定"]
-                    })
-                }
-            }
-        }
-
->qq分享图文到qq好友
-
-	    function shareWebImgTextToQQ() {
-            var json = '{"title":"图文分享标题","summary":"图文分享消息摘要","targetUrl":"http://appcan.cn","imageUrl":"res://aa.jpg","appName":"uexQQ", "cflag":"2"}';
-            uexQQ.shareWebImgTextToQQ(qq_appId, json);
-        }
-
-	    appcan.button("#close", "btn-act", function() {
-            appcan.window.close(-1);
-        })
-
->分享到qq好友
-
-	    appcan.button("#QQ", "btn-act", function() {
-            uexQQ.login(qq_appId);
-            shareWebImgTextToQQ();
-        })
-
->分享到qq空间
-
-	    appcan.button("#QQk", "btn-act", function() {
-            uexQQ.login(qq_appId);
-            shareWebImgTextToQQK();
-        })
-        appcan.button("#copy", "btn-act", function() {
-            uexClipboard.copy("中国最大的移动中间键平台AppCan对剪贴板的测试");
-        })
-        appcan.button("#message", "btn-act", function() {
-            uexSMS.open("10086", "中国最大的移动中间键平台AppCan对剪短信的测试");
-        })
-
->取消分享
-
-	     appcan.button("#cancle", "btn-act", function() {
-            appcan.window.close(-1);
-        })
-
-点击分享到微信好友按钮效果如下：
-
-![](https://raw.githubusercontent.com/code4appcan/Plugin-Share/master/8.png)
-
-点击分享到微信朋友圈按钮效果如下：
-
-![](https://raw.githubusercontent.com/code4appcan/Plugin-Share/master/9.png)
-
-点击分享到QQ效果如下：
-
-![](https://raw.githubusercontent.com/code4appcan/Plugin-Share/master/10.png)
-
-点击分享到QQ空间效果如下：
-
-![](https://raw.githubusercontent.com/code4appcan/Plugin-Share/master/11.png)
-
-点击短信按钮弹出手机短信发送界面效果如下：
-
-![](https://raw.githubusercontent.com/code4appcan/Plugin-Share/master/12.png)
-
-
+![](https://raw.githubusercontent.com/code4appcan/Plugin-Pay/master/picture/%E5%9B%BE%E7%89%877.png)
